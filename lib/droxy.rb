@@ -5,6 +5,7 @@ require "droxy/resolver_file"
 require "droxy/dns_server"
 
 require "open3"
+require "uri"
 
 
 module Droxy
