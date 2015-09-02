@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+require "droxy"
+
+require "colorize"
+require "thor"
+
+class DroxyCLI < Thor
+  desc "install", "install /etc/resolver file"
+  method_option :tld, desc: "TLD to proxy to docker", default: "dock"
+  method_option :port, desc: "Port to run DNS server on", default: 20562
+  def install
+    require "droxy/installer"
+
+    Droxy::Installer.new(
+      tld:  options[:tld],
+      port: options[:port]
+    ).install
+  rescue Droxy::SudoRequired
+    ask_for_sudo __method__
+  end
+
+  desc "uninstall", "uninstall /etc/resolver file"
+  method_option :tld, desc: "TLD to proxy to docker", default: "dock"
+  def uninstall
+    require "droxy/installer"
+
+    Droxy::Installer.new(tld:  options[:tld]).uninstall
+  rescue Droxy::SudoRequired
+    ask_for_sudo __method__
+  end
+
+  desc "start", "start droxy server"
+  method_option :tld, desc: "TLD to proxy to docker", default: "dock"
+  def start
+    Droxy::Server.new(tld: options[:tld]).run!
+  end
+
+private
+
+  def ask_for_sudo method
+    error "Permission denied. Please re-run #{method} with sudo.".light_red
+  end
+end
+
+DroxyCLI.start
